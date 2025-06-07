@@ -1,5 +1,6 @@
 # Ignore environment files
 Backend/variables.env
+Backend/requirements.txt
 
 
 # Python
