@@ -36,8 +36,8 @@ pip install -r requirements.txt
 cd Backend
 python server.py
 
-### Backend running
-cd frontendgit remote -v
+### Frontend running
+cd frontend
 npm run dev
 ```
 
