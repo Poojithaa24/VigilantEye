@@ -1,0 +1,17 @@
+# Ignore environment files
+Backend/varaibles.env
+
+# Python
+Backend/__pycache__/
+Backend/dubug/
+Backend/processed/
+Backend/uploads/
+
+# Node
+frontend/node_modules/
+frontend/build/
+frontend/dist/
+
+# Logs and models
+Backend/*.log
+Backend/*.mp4

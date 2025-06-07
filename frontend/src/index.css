@@ -1,0 +1,89 @@
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 220 20% 12%;
+    --foreground: 210 40% 98%;
+
+    --card: 222 20% 15%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222 20% 15%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 196 80% 40%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 222 20% 20%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 196 80% 30%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --alert: 0 84.2% 60.2%;
+    --alert-foreground: 210 40% 98%;
+
+    --success: 142 76% 40%;
+    --success-foreground: 210 40% 98%;
+
+    --warning: 38 92% 50%;
+    --warning-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 25%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 196 80% 40%;
+    
+    --radius: 0.5rem;
+
+    --sidebar-background: 220 20% 10%;
+    --sidebar-foreground: 210 40% 90%;
+    --sidebar-primary: 196 80% 45%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 20% 15%;
+    --sidebar-accent-foreground: 210 40% 98%;
+    --sidebar-border: 220 20% 20%;
+    --sidebar-ring: 196 80% 45%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground overflow-x-hidden;
+  }
+}
+
+@layer utilities {
+  .glass-card {
+    @apply bg-card/60 backdrop-blur-sm border border-white/10;
+  }
+  
+  .text-glow {
+    text-shadow: 0 0 10px rgba(var(--primary), 0.7);
+  }
+  
+  .alert-glow {
+    box-shadow: 0 0 15px rgba(var(--alert), 0.5);
+  }
+  
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}
