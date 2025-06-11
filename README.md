@@ -36,8 +36,11 @@ pip install -r requirements.txt
 ```bash
 cd Backend
 python server.py
+```
 
 ### Frontend running
+
+```bash
 cd frontend
 npm install // for running first time
 npm run dev
