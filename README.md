@@ -38,8 +38,11 @@ Add Twilio API keys in .env file inside Backend Folder
 Example file comtent
 
 TWILIO_ACCOUNT_SID=XXXX
+
 TWILIO_AUTH_TOKEN=XXXX
+
 TWILIO_PHONE_NUMBER=XXXX
+
 DEFAULT_ALERT_PHONE=XXXX
 
 ```bash
