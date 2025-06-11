@@ -25,6 +25,7 @@ VigilantEye is a full-stack application combining backend AI models and a React-
 - Node.js 16+
 - Supabase CLI
 - Twilio API keys
+- ffmpeg from https://www.gyan.dev/ffmpeg/builds/
 
 ### Requirements installation
 
@@ -38,6 +39,6 @@ python server.py
 
 ### Frontend running
 cd frontend
+npm install // for running first time
 npm run dev
 ```
-

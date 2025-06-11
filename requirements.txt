@@ -9,4 +9,3 @@ flask-cors
 flask-socketio
 twilio
 python-dotenv
-npm install

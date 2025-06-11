@@ -100,27 +100,6 @@ const Index = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-        <Link to="/live-cctv">
-          <Card className="hover:shadow-md transition-shadow cursor-pointer">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle>Live Camera Feed</CardTitle>
-                  <CardDescription>
-                    Access real-time camera monitoring
-                  </CardDescription>
-                </div>
-                <Camera className="h-5 w-5 text-primary" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <Button variant="outline" className="w-full">
-                View Live Feed
-              </Button>
-            </CardContent>
-          </Card>
-        </Link>
-
         <Link to="/video-analysis">
           <Card className="hover:shadow-md transition-shadow cursor-pointer">
             <CardHeader>

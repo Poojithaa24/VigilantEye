@@ -19,7 +19,6 @@ from dotenv import load_dotenv
 
 # Load environment variables
 load_dotenv(dotenv_path=r"C:\Users\USER\OneDrive\Desktop\VigilantEye\Backend\variables.env")
-print("Twilio SID:", os.getenv("TWILIO_ACCOUNT_SID"))
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -110,7 +109,6 @@ def convert_to_web_format(input_path, output_path):
             text=True
         )
         
-        logger.info(f"FFmpeg output:\n{result.stdout}")
         logger.info("Conversion successful")
         return True
 
@@ -243,25 +241,13 @@ def detection_loop():
             # Run detection
             frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             frame_violence = preprocess_frame(frame_rgb)
-
             frame_weapon = cv2.resize(frame, (640, 640)) 
-            debug_weapon_frame_path = f"debug/weapon_input_frame_{frame_count}.jpg"
-            cv2.imwrite(debug_weapon_frame_path, frame_weapon)
-            print(f"Saved weapon input frame to: {debug_weapon_frame_path}")
-            print(f"Frame {frame_count}:")
-            print(f"  - Shape (after resize): {frame_weapon.shape}")
-            print(f"  - Data Type: {frame_weapon.dtype}")
-            print(f"  - Min Value: {np.min(frame_weapon)}")
-            print(f"  - Max Value: {np.max(frame_weapon)}")  # Preprocess frame if needed
             violence_raw = detect_violence(frame_violence)
             weapons_raw = detect_weapons(frame_weapon)
             
             # Convert numpy types
             violence_raw = convert_numpy_types(violence_raw)
             weapons_raw = convert_numpy_types(weapons_raw)
-
-            print(f"Violence Raw Output: {violence_raw}")
-            print(f"Weapons Raw Output: {weapons_raw}")
             
             # Determine detection status
             violence_detected = bool(violence_raw[0]) if isinstance(violence_raw, list) and len(violence_raw) > 0 else False
@@ -276,7 +262,7 @@ def detection_loop():
                 'violence_detected': violence_detected,
                 'weapons_detected': weapons_detected,
                 'violence_confidence': violence_confidence,
-                'weapon_confidence': 0.8 if weapons_detected else 0,  # Default confidence
+                'weapon_confidence': 0.8 if weapons_detected else 0,
                 'timestamp': datetime.now().isoformat()
             }
             
@@ -300,11 +286,6 @@ def detection_loop():
                         cv2.rectangle(debug_frame, (x1, y1), (x2, y2), (0, 0, 255), 2)
                         cv2.putText(debug_frame, "Weapon", (x1, y1-10),
                                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 1)
-
-            # Save debug frame every 10 frames
-            if frame_count % 10 == 0:
-                debug_path = f"debug/frame_{frame_count}.jpg"
-                cv2.imwrite(debug_path, debug_frame)
 
             # Encode and send frame
             _, buffer = cv2.imencode('.jpg', frame)
@@ -334,7 +315,6 @@ def detection_loop():
 @socketio.on('video_frame')
 def handle_video_frame(data):
     global detection_active
-    # Add a cooldown to avoid spamming SMS
     if not hasattr(handle_video_frame, "last_alert_time"):
         handle_video_frame.last_alert_time = 0
     alert_cooldown = 60  # seconds
@@ -342,15 +322,13 @@ def handle_video_frame(data):
     if not detection_active:
         return
     try:
-        frame_data = data['frame'].split(',')[1]  # Remove data:image/jpeg;base64,
+        frame_data = data['frame'].split(',')[1]
         img_bytes = base64.b64decode(frame_data)
         nparr = np.frombuffer(img_bytes, np.uint8)
         frame = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
         if frame is None:
-            print("Failed to decode frame from browser")
             return
 
-        # --- Run detection (reuse your detection logic) ---
         frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         frame_violence = preprocess_frame(frame_rgb)
         frame_weapon = cv2.resize(frame, (640, 640))
@@ -371,12 +349,10 @@ def handle_video_frame(data):
         }
         socketio.emit('detection_data', detection_data)
 
-        # --- Emit the frame back to the client ---
         _, buffer = cv2.imencode('.jpg', frame)
         frame_b64 = base64.b64encode(buffer).decode('utf-8')
         socketio.emit('video_frame_processed', {'frame': frame_b64})
 
-        # --- Send SMS if weapon detected and cooldown passed ---
         current_time = time.time()
         if weapons_detected and (current_time - handle_video_frame.last_alert_time > alert_cooldown):
             send_direct_alert(
@@ -387,7 +363,7 @@ def handle_video_frame(data):
             handle_video_frame.last_alert_time = current_time
 
     except Exception as e:
-        print(f"Error processing video frame: {e}")
+        logger.error(f"Error processing video frame: {e}")
 
 # API Routes
 
@@ -401,15 +377,12 @@ def serve_video(filename):
             logger.error(f"Video not found: {safe_filename}")
             return jsonify({'error': 'Video file not found'}), 404
 
-        # Verify file extension
         if not allowed_file(safe_filename):
             logger.error(f"Invalid file type: {safe_filename}")
             return jsonify({'error': 'Invalid file type'}), 400
 
-        # Get file size
         file_size = os.path.getsize(file_path)
 
-        # Create response with proper headers
         response = send_from_directory(
             PROCESSED_FOLDER,
             safe_filename,
@@ -417,7 +390,6 @@ def serve_video(filename):
             conditional=True
         )
 
-        # Set headers for streaming
         response.headers['Content-Length'] = str(file_size)
         response.headers['Accept-Ranges'] = 'bytes'
         response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
@@ -438,7 +410,6 @@ def test_alert():
     result = send_direct_alert("+919390501063", "violence", 95, filename="test.mp4")
     return f"Test alert sent: {result}"
 
-# --- ALERT FUNCTION with logging ---
 def send_direct_alert(phone_number, detection_type, confidence, filename=None):
     try:
         if not phone_number:
@@ -452,7 +423,6 @@ def send_direct_alert(phone_number, detection_type, confidence, filename=None):
             message += f"\nFile: {filename}"
 
         logger.info(f"Attempting to send alert to {phone_number}")
-        logger.debug(f"Message content:\n{message}")
 
         message = twilio_client.messages.create(
             body=message,
@@ -460,7 +430,6 @@ def send_direct_alert(phone_number, detection_type, confidence, filename=None):
             to=phone_number
         )
 
-        # Log Twilio API response
         logger.info(f"Twilio response: SID: {message.sid}, Status: {message.status}")
 
         return True
@@ -470,10 +439,8 @@ def send_direct_alert(phone_number, detection_type, confidence, filename=None):
             logger.error(f"Twilio Error Details: {e.more_info}")
         return False
 
-# --- Inside process_video (Add this just before alert is called) ---
 @app.route('/process-video', methods=['POST'])
 def process_video():
-    # Handle video file upload
     if 'video' not in request.files:
         return jsonify({'status': 'failed', 'error': 'No video file'}), 400
 
@@ -481,43 +448,35 @@ def process_video():
     if file.filename == '' or not allowed_file(file.filename):
         return jsonify({'status': 'failed', 'error': 'Invalid file'}), 400
 
-    # Check file size
     file.seek(0, os.SEEK_END)
     file_size = file.tell()
     file.seek(0)
     if file_size > MAX_FILE_SIZE:
         return jsonify({'status': 'failed', 'error': 'File too large'}), 400
 
-    # Generate unique filename
     filename = secure_filename(file.filename)
     unique_id = str(uuid.uuid4())
     processed_filename = f"{unique_id}_{filename}"
 
-    # Set up file paths
     input_path = os.path.join(UPLOAD_FOLDER, filename)
     temp_output = os.path.join(PROCESSED_FOLDER, f"temp_{processed_filename}")
     processed_path = os.path.join(PROCESSED_FOLDER, processed_filename)
 
     try:
-        # Save original file
         file.save(input_path)
         logger.info(f"Saved input file to {input_path}")
 
-        # Validate input video
         if not validate_video(input_path):
             raise RuntimeError("Invalid input video file")
 
-        # Run detection
         detection_results = run_detection(input_path, temp_output)
         detection_results = convert_numpy_types(detection_results)
         logger.info(f"Detection results: {detection_results}")
 
-        # Handle different detection results formats
         violence_detected = False
         weapons_detected = False
         confidence = 0.0
 
-        # Process detection results
         for result in detection_results:
             if isinstance(result, dict):
                 if result.get('type') == 'violence':
@@ -527,23 +486,14 @@ def process_video():
                     weapons_detected = True
                     confidence = max(confidence, result.get('confidence', 0))
 
-        logger.info(f"Violence: {violence_detected}, Weapons: {weapons_detected}, Confidence: {confidence}")
-        print(f"Violence: {violence_detected}, Weapons: {weapons_detected}, Confidence: {confidence}")
-        logger.info("Detection results processed")
-        print("Detection results processed")
         if violence_detected or weapons_detected:
-            logger.info("Conditions met for alert. Sending SMS...")
-            logger.info("Calling send_direct_alert due to detection...")
             send_direct_alert(
                 phone_number=request.form.get('contact_phone', os.getenv('DEFAULT_ALERT_PHONE')),
                 detection_type="violence" if violence_detected else "weapon",
                 confidence=confidence,
                 filename=filename
             )
-        else:
-            logger.info("No alert sent: No violence or weapons detected.")
 
-        # Convert to web format
         if not convert_to_web_format(temp_output, processed_path):
             raise RuntimeError("Video format conversion failed")
 
@@ -567,7 +517,6 @@ def process_video():
         }), 500
 
     finally:
-        # Clean up temporary files
         for path in [input_path, temp_output]:
             try:
                 if os.path.exists(path):

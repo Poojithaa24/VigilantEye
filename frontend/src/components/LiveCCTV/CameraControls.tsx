@@ -1,5 +1,4 @@
-
-import React from 'react';
+import React from "react";
 import { Button } from "@/components/ui/button";
 import { Camera, CameraOff, Play, Pause } from "lucide-react";
 
