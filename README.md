@@ -35,7 +35,7 @@ pip install -r requirements.txt
 
 Add Twilio API keys in .env file inside Backend Folder
 
-Example file comtent
+Example file content
 
 TWILIO_ACCOUNT_SID=XXXX
 
